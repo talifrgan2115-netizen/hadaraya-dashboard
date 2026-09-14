@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הדריה — הכנסות, הוצאות ורווח</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&family=Frank+Ruhl+Libre:wght@400;500&display=swap">
+<style>
+  /* ============================================================
+     שפת המותג של הדריה, שנדגמה מ-hadaryadesign.com:
+     קרם #f3eee8, אספרסו #3a2115, טאופ חם #8e7d6d, גופן Heebo.
+     המשטחים והדיו חמים; צבעי הסדרות נשארים הכחול והכתום
+     המאומתים — הם עברו את כל בדיקות הנגישות מול הקרם,
+     כולל במצב pairs:all, וצמד חום-על-חום היה נכשל בהן.
+     ============================================================ */
+  :root {
+    color-scheme: light;
+    --surface-1:      #fbf9f6;
+    --page:           #f3eee8;
+    --text-primary:   #121212;
+    --text-secondary: #52463c;
+    --text-muted:     #8e7d6d;
+    --grid:           #e6ded3;
+    --baseline:       #cfc5b8;
+    --border:         rgba(58,33,21,0.14);
+    --accent:         #3a2115;
+    --accent-ink:     #f3eee8;
+    --series-income:  #2a78d6;
+    --series-expense: #eb6834;
+    --profit-pos:     #2a78d6;
+    --profit-neg:     #e34948;
+    --status-warning: #fab219;
+    --status-critical:#d03b3b;
+    --success-text:   #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1:      #251a12;
+      --page:           #1a120c;
+      --text-primary:   #f3eee8;
+      --text-secondary: #cbbcae;
+      --text-muted:     #8e7d6d;
+      --grid:           #35271c;
+      --baseline:       #4a382a;
+      --border:         rgba(243,238,232,0.13);
+      --accent:         #f3eee8;
+      --accent-ink:     #221108;
+      --series-income:  #3987e5;
+      --series-expense: #d95926;
+      --profit-pos:     #3987e5;
+      --profit-neg:     #e66767;
+      --success-text:   #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:      #251a12;
+    --page:           #1a120c;
+    --text-primary:   #f3eee8;
+    --text-secondary: #cbbcae;
+    --text-muted:     #8e7d6d;
+    --grid:           #35271c;
+    --baseline:       #4a382a;
+    --border:         rgba(243,238,232,0.13);
+    --accent:         #f3eee8;
+    --accent-ink:     #221108;
+    --series-income:  #3987e5;
+    --series-expense: #d95926;
+    --profit-pos:     #3987e5;
+    --profit-neg:     #e66767;
+    --success-text:   #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: "Heebo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-block: 40px 72px; padding-inline: 22px; }
+
+  header { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+  .brand { font-size: 11px; letter-spacing: .26em; color: var(--text-muted); font-weight: 500; margin-bottom: 7px; }
+  h1 {
+    font-family: "Frank Ruhl Libre", Georgia, "Times New Roman", serif;
+    font-size: 30px; font-weight: 500; margin: 0; letter-spacing: -0.01em; line-height: 1.2;
+  }
+  .sub { color: var(--text-secondary); font-size: 13px; margin-top: 6px; }
+  .stamp { color: var(--text-muted); font-size: 12px; }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+
+  /* ---- שורת סינון אחת, מעל כל מה שהיא מסננת ---- */
+  .filters { display: flex; flex-wrap: wrap; gap: 18px 26px; align-items: center; margin-bottom: 22px; }
+  .fgroup { display: flex; align-items: center; gap: 9px; }
+  .flabel { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; font-weight: 500; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface-1); }
+  .seg button {
+    font: inherit; font-size: 13px; padding: 6px 16px; border: 0; cursor: pointer;
+    background: transparent; color: var(--text-secondary); min-height: 32px; transition: background .12s, color .12s;
+  }
+  .seg button:hover { background: var(--grid); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .chk { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+  .chk input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+  /* ---- התראות איכות נתונים ---- */
+  .notice { display: flex; gap: 12px; padding: 14px 16px; border-radius: 11px; margin-bottom: 14px; align-items: flex-start; border: 1px solid var(--border); background: var(--surface-1); }
+  .notice .ico { flex: none; font-size: 15px; line-height: 1.45; }
+  .notice.warn  { border-inline-start: 3px solid var(--status-warning); }
+  .notice.crit  { border-inline-start: 3px solid var(--status-critical); }
+  .notice b { font-weight: 600; }
+  .notice p { margin: 4px 0 0; color: var(--text-secondary); font-size: 13px; }
+
+  /* ---- אריחי מספר ---- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 13px; margin-bottom: 22px; }
+  .tile-label { color: var(--text-muted); font-size: 11px; letter-spacing: .14em; font-weight: 500; }
+  .tile-value { font-size: 31px; font-weight: 500; letter-spacing: -0.02em; margin-top: 9px; }
+  .tile-note { color: var(--text-muted); font-size: 12px; margin-top: 5px; }
+  .pos { color: var(--success-text); }
+  .neg { color: var(--profit-neg); }
+
+  /* ---- תרשימים ---- */
+  .chart-card { margin-bottom: 18px; position: relative; }
+  .chart-head { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  h2 { font-family: "Frank Ruhl Libre", Georgia, serif; font-size: 17px; font-weight: 500; margin: 0; }
+  .chart-sub { color: var(--text-muted); font-size: 12px; margin-top: 3px; }
+  .legend { display: flex; gap: 16px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .plot { width: 100%; height: auto; display: block; margin-top: 10px; overflow: visible; }
+  .plot text { font-family: "Heebo", system-ui, sans-serif; }
+  /* מספרים מבודדים ל-LTR: בתוך דף RTL טווח כמו 17.5–23.5 מתהפך, וסימן המינוס נודד לסוף */
+  .num-ltr, .tick, .peak-label, .tile-value, td.num, .tip .t-row b { direction: ltr; unicode-bidi: isolate; }
+  .tick { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .band-label { fill: var(--text-secondary); font-size: 11.5px; }
+  .peak-label { fill: var(--text-primary); font-size: 11.5px; font-weight: 600; }
+
+  .tip {
+    position: absolute; pointer-events: none; z-index: 5; opacity: 0; transition: opacity .09s;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; font-size: 12.5px; box-shadow: 0 6px 20px rgba(58,33,21,.16); min-width: 136px;
+  }
+  .tip.on { opacity: 1; }
+  .tip .t-title { font-weight: 600; margin-bottom: 6px; }
+  .tip .t-row { display: flex; justify-content: space-between; gap: 15px; color: var(--text-secondary); }
+  .tip .t-row b { color: var(--text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ---- טבלה ---- */
+  .tablewrap { overflow-x: auto; margin-top: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: right; padding: 9px 11px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--text-muted); font-weight: 500; font-size: 11px; letter-spacing: .1em; }
+  td.num { font-variant-numeric: tabular-nums; }
+  tfoot td { font-weight: 600; border-top: 2px solid var(--baseline); border-bottom: 0; }
+
+  .state { padding: 44px 20px; text-align: center; color: var(--text-secondary); }
+  .state.err { color: var(--profit-neg); }
+  details.raw { margin-top: 18px; }
+  details.raw summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand">HADARYA</div>
+      <h1>הכנסות, הוצאות ורווח</h1>
+      <div class="sub">נתונים חיים מלוחות המאנדיי «הכנסות והזמנות» ו«הוצאות»</div>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+
+  <div id="app"><div class="state">טוען נתונים ממאנדיי…</div></div>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const app = document.getElementById('app');
+  const stamp = document.getElementById('stamp');
+
+  const state = {
+    data: null,
+    grain: 'month',      // month | week
+    range: 'all',        // all | 90 | 30
+    includeReceipts: false,
+    includeReview: true,
+    view: 'chart',       // chart | table
+  };
+
+  // ---------- עזרי מספרים ותאריכים ----------
+
+  const shekel = (n) => (n < 0 ? '-' : '') + '₪' + Math.round(Math.abs(n)).toLocaleString('he-IL');
+  const compact = (n) => {
+    const abs = Math.abs(n);
+    if (abs >= 1000) return (n / 1000).toLocaleString('he-IL', { maximumFractionDigits: abs >= 10000 ? 0 : 1 }) + 'K';
+    return Math.round(n).toLocaleString('he-IL');
+  };
+
+  const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  const parseDate = (s) => {
+    if (!s) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (!m) return null;
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  };
+
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  /** תחילת השבוע בישראל היא יום ראשון */
+  const weekStart = (d) => {
+    const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    out.setDate(out.getDate() - out.getDay());
+    return out;
+  };
+
+  const bucketKey = (d, grain) =>
+    grain === 'week' ? iso(weekStart(d)) : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+  const bucketLabel = (key, grain) => {
+    if (grain === 'week') {
+      const s = parseDate(key);
+      const e = new Date(s); e.setDate(e.getDate() + 6);
+      return `${s.getDate()}.${s.getMonth() + 1}–${e.getDate()}.${e.getMonth() + 1}`;
+    }
+    const [y, m] = key.split('-');
+    return `${MONTHS[Number(m) - 1]} ${y}`;
+  };
+
+  /** רצף תקופות בלי חורים — שבוע בלי תנועה חייב להופיע כאפס, לא להיעלם */
+  const fillRange = (keys, grain) => {
+    if (!keys.length) return [];
+    const sorted = [...keys].sort();
+    const out = [];
+    if (grain === 'week') {
+      const cur = parseDate(sorted[0]);
+      const last = parseDate(sorted[sorted.length - 1]);
+      while (cur <= last) { out.push(iso(cur)); cur.setDate(cur.getDate() + 7); }
+    } else {
+      let [y, m] = sorted[0].split('-').map(Number);
+      const [ly, lm] = sorted[sorted.length - 1].split('-').map(Number);
+      while (y < ly || (y === ly && m <= lm)) {
+        out.push(`${y}-${String(m).padStart(2, '0')}`);
+        m += 1; if (m > 12) { m = 1; y += 1; }
+      }
+    }
+    return out;
+  };
+
+  // ---------- סינון וסכימה ----------
+
+  function activeRows() {
+    const d = state.data;
+    let cutoff = null;
+    if (state.range !== 'all') {
+      cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - Number(state.range));
+      cutoff.setHours(0, 0, 0, 0);
+    }
+
+    const keep = (row) => {
+      const date = parseDate(row.date);
+      if (!date || row.amount === null) return false;
+      return !cutoff || date >= cutoff;
+    };
+
+    const income = d.income.filter(keep);
+    const expenses = d.expenses.filter(row =>
+      keep(row) &&
+      (state.includeReceipts || !row.isReceipt) &&
+      (state.includeReview || !row.needsReview)
+    );
+    return { income, expenses };
+  }
+
+  function aggregate(rows) {
+    const map = new Map();
+    const add = (list, field) => {
+      for (const row of list) {
+        const key = bucketKey(parseDate(row.date), state.grain);
+        if (!map.has(key)) map.set(key, { key, income: 0, expenses: 0 });
+        map.get(key)[field] += row.amount;
+      }
+    };
+    add(rows.income, 'income');
+    add(rows.expenses, 'expenses');
+
+    return fillRange([...map.keys()], state.grain).map(key => {
+      const b = map.get(key) || { key, income: 0, expenses: 0 };
+      return { ...b, label: bucketLabel(key, state.grain), profit: b.income - b.expenses };
+    });
+  }
+
+  // ---------- בדיקות איכות נתונים ----------
+
+  function audit() {
+    const all = state.data.expenses;
+    const notices = [];
+
+    const byDate = new Map();
+    for (const row of all) {
+      if (!row.date) continue;
+      byDate.set(row.date, (byDate.get(row.date) || 0) + 1);
+    }
+    const dated = [...byDate.entries()].sort((a, b) => b[1] - a[1]);
+    if (dated.length && all.length >= 5) {
+      const [topDate, count] = dated[0];
+      const share = count / all.length;
+      if (share >= 0.6) {
+        notices.push({
+          level: 'crit', ico: '⚠',
+          title: `${count} מתוך ${all.length} ההוצאות נושאות את אותו תאריך (${topDate})`,
+          body: 'כל עוד זה המצב, הפילוח לפי שבוע וחודש אינו משקף את המציאות: ההוצאות נערמות כולן על תקופה אחת, והתקופות שלפניה מוצגות כרווח מלא. הדשבורד יציג נתונים נכונים ברגע שתאריכי ההוצאה יתוקנו במאנדיי — בלי שינוי בקוד.',
+        });
+      }
+    }
+
+    const receipts = all.filter(r => r.isReceipt);
+    if (receipts.length) {
+      const sum = receipts.reduce((t, r) => t + (r.amount || 0), 0);
+      notices.push({
+        level: 'warn', ico: '⧉',
+        title: `${receipts.length} רשומות מזוהות כקבלות (${shekel(sum)})`,
+        body: state.includeReceipts
+          ? 'הן נספרות כרגע יחד עם החשבוניות שהן מתעדות — ההוצאות מנופחות בהתאם. כבה את «כלול קבלות» כדי לנטרל.'
+          : 'קבלה מתעדת חשבונית שכבר רשומה, ולכן היא מנוטרלת כברירת מחדל כדי למנוע ספירה כפולה.',
+      });
+    }
+
+    const review = all.filter(r => r.needsReview);
+    if (review.length) {
+      const sum = review.reduce((t, r) => t + (r.amount || 0), 0);
+      notices.push({
+        level: 'warn', ico: '⚑',
+        title: `${review.length} רשומות מסומנות «לבדיקה» (${shekel(sum)})`,
+        body: review.map(r => `${r.vendor || r.name} — ${shekel(r.amount || 0)}`).join(' · '),
+      });
+    }
+
+    const missing = [...state.data.income, ...all].filter(r => r.amount === null || !r.date).length;
+    if (missing) {
+      notices.push({
+        level: 'warn', ico: '∅',
+        title: `${missing} רשומות חסרות תאריך או סכום`,
+        body: 'הן אינן נכללות באף חישוב בדף הזה.',
+      });
+    }
+    return notices;
+  }
+
+  // ---------- תרשימים ----------
+
+  const W = 880, H = 320, M = { top: 30, right: 60, bottom: 46, left: 14 };
+  const plotW = W - M.right - M.left;
+  const plotH = H - M.top - M.bottom;
+
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    const mag = Math.pow(10, Math.floor(Math.log10(v)));
+    return Math.ceil(v / (mag / 2)) * (mag / 2);
+  }
+
+  /** קצה נתונים מעוגל 4px, מעוגן לקו הבסיס */
+  function barPath(x, y, w, h, r = 4) {
+    if (h <= 0.5) return '';
+    const rr = Math.min(r, h, w / 2);
+    return `M${x},${y + h} L${x},${y + rr} Q${x},${y} ${x + rr},${y} L${x + w - rr},${y} Q${x + w},${y} ${x + w},${y + rr} L${x + w},${y + h} Z`;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  function gridAndAxis(max, min = 0) {
+    const steps = 4;
+    let out = '';
+    for (let i = 0; i <= steps; i++) {
+      const value = min + (max - min) * (i / steps);
+      const y = M.top + plotH - ((value - min) / (max - min)) * plotH;
+      out += `<line x1="${M.left}" y1="${y}" x2="${M.left + plotW}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+      out += `<text class="tick" x="${M.left + plotW + 8}" y="${y + 4}" text-anchor="start">${esc(compact(value))}</text>`;
+    }
+    return out;
+  }
+
+  function renderGrouped(buckets) {
+    if (!buckets.length) return '<div class="state">אין נתונים בטווח הזה.</div>';
+
+    const max = niceMax(Math.max(1, ...buckets.map(b => Math.max(b.income, b.expenses))));
+    const band = plotW / buckets.length;
+    const barW = Math.max(5, Math.min(26, band / 2 - 3));
+    const y = (v) => M.top + plotH - (v / max) * plotH;
+
+    const peakIdx = buckets.reduce((best, b, i) => (b.income > buckets[best].income ? i : best), 0);
+    const everyNth = Math.ceil(buckets.length / 13);
+    const ltr = state.grain === 'week' ? ' num-ltr' : '';
+
+    let marks = '', labels = '', hits = '';
+
+    buckets.forEach((b, i) => {
+      const cx = M.left + band * (i + 0.5);
+      // 2px רווח משטח בין שני העמודים
+      const xIncome = cx - barW - 1;
+      const xExpense = cx + 1;
+
+      marks += `<path d="${barPath(xIncome, y(b.income), barW, M.top + plotH - y(b.income))}" fill="var(--series-income)"/>`;
+      marks += `<path d="${barPath(xExpense, y(b.expenses), barW, M.top + plotH - y(b.expenses))}" fill="var(--series-expense)"/>`;
+
+      if ((buckets.length - 1 - i) % everyNth === 0) {
+        labels += `<text class="band-label${ltr}" x="${cx}" y="${M.top + plotH + 18}" text-anchor="middle">${esc(b.label)}</text>`;
+      }
+      // תווית ישירה על השיא בלבד — לא מספר על כל עמוד
+      if (i === peakIdx && b.income > 0) {
+        labels += `<text class="peak-label" x="${xIncome + barW / 2}" y="${y(b.income) - 8}" text-anchor="middle">${esc(shekel(b.income))}</text>`;
+      }
+      hits += `<rect x="${M.left + band * i}" y="${M.top}" width="${band}" height="${plotH}" fill="transparent" data-i="${i}" style="cursor:default"/>`;
+    });
+
+    return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="הכנסות מול הוצאות לפי תקופה">
+      ${gridAndAxis(max)}
+      ${marks}
+      <line x1="${M.left}" y1="${M.top + plotH}" x2="${M.left + plotW}" y2="${M.top + plotH}" stroke="var(--baseline)" stroke-width="1"/>
+      ${labels}
+      <g class="hits">${hits}</g>
+    </svg>`;
+  }
+
+  function renderProfit(buckets) {
+    if (!buckets.length) return '<div class="state">אין נתונים בטווח הזה.</div>';
+
+    const values = buckets.map(b => b.profit);
+    const hi = niceMax(Math.max(1, ...values));
+    const lo = Math.min(0, ...values);
+    const loNice = lo < 0 ? -niceMax(Math.abs(lo)) : 0;
+    const span = hi - loNice;
+    const y = (v) => M.top + plotH - ((v - loNice) / span) * plotH;
+    const zeroY = y(0);
+
+    const band = plotW / buckets.length;
+    const barW = Math.max(6, Math.min(38, band * 0.55));
+    const everyNth = Math.ceil(buckets.length / 13);
+    const ltr = state.grain === 'week' ? ' num-ltr' : '';
+
+    let marks = '', labels = '', hits = '';
+    buckets.forEach((b, i) => {
+      const cx = M.left + band * (i + 0.5);
+      const x = cx - barW / 2;
+      const up = b.profit >= 0;
+      const top = up ? y(b.profit) : zeroY;
+      const h = Math.abs(zeroY - y(b.profit));
+      const color = up ? 'var(--profit-pos)' : 'var(--profit-neg)';
+
+      if (up) marks += `<path d="${barPath(x, top, barW, h)}" fill="${color}"/>`;
+      else marks += `<path d="${barPath(x, zeroY, barW, h)}" fill="${color}" transform="rotate(180 ${x + barW / 2} ${zeroY + h / 2})"/>`;
+
+      if ((buckets.length - 1 - i) % everyNth === 0) {
+        labels += `<text class="band-label${ltr}" x="${cx}" y="${M.top + plotH + 18}" text-anchor="middle">${esc(b.label)}</text>`;
+      }
+      hits += `<rect x="${M.left + band * i}" y="${M.top}" width="${band}" height="${plotH}" fill="transparent" data-i="${i}"/>`;
+    });
+
+    let ticks = '';
+    for (let i = 0; i <= 4; i++) {
+      const v = loNice + (span * i) / 4;
+      const ty = y(v);
+      ticks += `<line x1="${M.left}" y1="${ty}" x2="${M.left + plotW}" y2="${ty}" stroke="var(--grid)" stroke-width="1"/>`;
+      ticks += `<text class="tick" x="${M.left + plotW + 8}" y="${ty + 4}" text-anchor="start">${esc(compact(v))}</text>`;
+    }
+
+    return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="רווח לפי תקופה">
+      ${ticks}
+      ${marks}
+      <line x1="${M.left}" y1="${zeroY}" x2="${M.left + plotW}" y2="${zeroY}" stroke="var(--baseline)" stroke-width="1"/>
+      ${labels}
+      <g class="hits">${hits}</g>
+    </svg>`;
+  }
+
+  // ---------- טבלה ----------
+
+  function renderTable(buckets, totals) {
+    const rows = buckets.map(b => `
+      <tr>
+        <td>${esc(b.label)}</td>
+        <td class="num">${esc(shekel(b.income))}</td>
+        <td class="num">${esc(shekel(b.expenses))}</td>
+        <td class="num ${b.profit >= 0 ? 'pos' : 'neg'}">${esc(shekel(b.profit))}</td>
+        <td class="num">${b.income ? Math.round((b.profit / b.income) * 100) + '%' : '—'}</td>
+      </tr>`).join('');
+
+    return `<div class="tablewrap"><table>
+      <thead><tr><th>תקופה</th><th>הכנסות</th><th>הוצאות</th><th>רווח</th><th>שיעור רווח</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr>
+        <td>סך הכל</td>
+        <td class="num">${esc(shekel(totals.income))}</td>
+        <td class="num">${esc(shekel(totals.expenses))}</td>
+        <td class="num ${totals.profit >= 0 ? 'pos' : 'neg'}">${esc(shekel(totals.profit))}</td>
+        <td class="num">${totals.income ? Math.round((totals.profit / totals.income) * 100) + '%' : '—'}</td>
+      </tr></tfoot>
+    </table></div>`;
+  }
+
+  // ---------- הרכבה ----------
+
+  function render() {
+    const rows = activeRows();
+    const buckets = aggregate(rows);
+    const totals = {
+      income: rows.income.reduce((t, r) => t + r.amount, 0),
+      expenses: rows.expenses.reduce((t, r) => t + r.amount, 0),
+    };
+    totals.profit = totals.income - totals.expenses;
+    const margin = totals.income ? (totals.profit / totals.income) * 100 : 0;
+    const grainWord = state.grain === 'week' ? 'שבוע' : 'חודש';
+
+    const notices = audit().map(n => `
+      <div class="notice ${n.level}">
+        <span class="ico">${esc(n.ico)}</span>
+        <div><b>${esc(n.title)}</b><p>${esc(n.body)}</p></div>
+      </div>`).join('');
+
+    app.innerHTML = `
+      <div class="filters">
+        <div class="fgroup">
+          <span class="flabel">פילוח</span>
+          <div class="seg" id="grain">
+            <button data-v="month" aria-pressed="${state.grain === 'month'}">חודשי</button>
+            <button data-v="week"  aria-pressed="${state.grain === 'week'}">שבועי</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <span class="flabel">טווח</span>
+          <div class="seg" id="range">
+            <button data-v="all" aria-pressed="${state.range === 'all'}">הכל</button>
+            <button data-v="90"  aria-pressed="${state.range === '90'}">90 יום</button>
+            <button data-v="30"  aria-pressed="${state.range === '30'}">30 יום</button>
+          </div>
+        </div>
+        <div class="fgroup">
+          <span class="flabel">תצוגה</span>
+          <div class="seg" id="view">
+            <button data-v="chart" aria-pressed="${state.view === 'chart'}">תרשים</button>
+            <button data-v="table" aria-pressed="${state.view === 'table'}">טבלה</button>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="rec" ${state.includeReceipts ? 'checked' : ''}> כלול קבלות</label>
+        <label class="chk"><input type="checkbox" id="rev" ${state.includeReview ? 'checked' : ''}> כלול רשומות לבדיקה</label>
+      </div>
+
+      ${notices}
+
+      <div class="tiles">
+        <div class="card">
+          <div class="tile-label">הכנסות</div>
+          <div class="tile-value">${esc(shekel(totals.income))}</div>
+          <div class="tile-note">${rows.income.length} רשומות</div>
+        </div>
+        <div class="card">
+          <div class="tile-label">הוצאות</div>
+          <div class="tile-value">${esc(shekel(totals.expenses))}</div>
+          <div class="tile-note">${rows.expenses.length} רשומות</div>
+        </div>
+        <div class="card">
+          <div class="tile-label">רווח</div>
+          <div class="tile-value ${totals.profit >= 0 ? 'pos' : 'neg'}">${esc(shekel(totals.profit))}</div>
+          <div class="tile-note">הכנסות פחות הוצאות</div>
+        </div>
+        <div class="card">
+          <div class="tile-label">שיעור רווח</div>
+          <div class="tile-value ${margin >= 0 ? 'pos' : 'neg'}">${margin.toFixed(1)}%</div>
+          <div class="tile-note">מתוך ההכנסות</div>
+        </div>
+      </div>
+
+      ${state.view === 'table' ? `<div class="card">${renderTable(buckets, totals)}</div>` : `
+        <div class="card chart-card" id="card-grouped">
+          <div class="chart-head">
+            <div>
+              <h2>הכנסות מול הוצאות לפי ${esc(grainWord)}</h2>
+              <div class="chart-sub">${buckets.length} תקופות · כל הסכומים בשקלים</div>
+            </div>
+            <div class="legend">
+              <span><i class="swatch" style="background:var(--series-income)"></i>הכנסות</span>
+              <span><i class="swatch" style="background:var(--series-expense)"></i>הוצאות</span>
+            </div>
+          </div>
+          ${renderGrouped(buckets)}
+          <div class="tip" id="tip-grouped"></div>
+        </div>
+
+        <div class="card chart-card" id="card-profit">
+          <div class="chart-head">
+            <div>
+              <h2>רווח לפי ${esc(grainWord)}</h2>
+              <div class="chart-sub">עמוד כחול — רווח · עמוד אדום — הפסד</div>
+            </div>
+          </div>
+          ${renderProfit(buckets)}
+          <div class="tip" id="tip-profit"></div>
+        </div>
+
+        <details class="raw"><summary>הצג את אותם נתונים כטבלה</summary>${renderTable(buckets, totals)}</details>
+      `}
+    `;
+
+    wire(buckets);
+  }
+
+  function wire(buckets) {
+    const seg = (id, key) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        state[key] = btn.dataset.v;
+        render();
+      });
+    };
+    seg('grain', 'grain');
+    seg('range', 'range');
+    seg('view', 'view');
+
+    const rec = document.getElementById('rec');
+    if (rec) rec.addEventListener('change', e => { state.includeReceipts = e.target.checked; render(); });
+    const rev = document.getElementById('rev');
+    if (rev) rev.addEventListener('change', e => { state.includeReview = e.target.checked; render(); });
+
+    hover('card-grouped', 'tip-grouped', buckets, (b) => `
+      <div class="t-row"><span>הכנסות</span><b>${esc(shekel(b.income))}</b></div>
+      <div class="t-row"><span>הוצאות</span><b>${esc(shekel(b.expenses))}</b></div>
+      <div class="t-row"><span>רווח</span><b>${esc(shekel(b.profit))}</b></div>`);
+
+    hover('card-profit', 'tip-profit', buckets, (b) => `
+      <div class="t-row"><span>רווח</span><b>${esc(shekel(b.profit))}</b></div>
+      <div class="t-row"><span>שיעור</span><b>${b.income ? Math.round((b.profit / b.income) * 100) + '%' : '—'}</b></div>`);
+  }
+
+  function hover(cardId, tipId, buckets, body) {
+    const card = document.getElementById(cardId);
+    const tip = document.getElementById(tipId);
+    if (!card || !tip) return;
+    const svg = card.querySelector('svg');
+    if (!svg) return;
+
+    svg.querySelectorAll('.hits rect').forEach(rect => {
+      rect.addEventListener('mousemove', (e) => {
+        const b = buckets[Number(rect.dataset.i)];
+        tip.innerHTML = `<div class="t-title">${esc(b.label)}</div>${body(b)}`;
+        tip.classList.add('on');
+        const box = card.getBoundingClientRect();
+        let x = e.clientX - box.left + 14;
+        if (x + tip.offsetWidth > box.width - 8) x = e.clientX - box.left - tip.offsetWidth - 14;
+        tip.style.left = Math.max(8, x) + 'px';
+        tip.style.top = Math.max(8, e.clientY - box.top - 10) + 'px';
+      });
+      rect.addEventListener('mouseleave', () => tip.classList.remove('on'));
+    });
+  }
+
+  // ---------- טעינה ----------
+
+  async function load() {
+    try {
+      const res = await fetch('/api/finance');
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.hint || payload.detail || payload.error || 'שגיאה לא ידועה');
+
+      state.data = payload;
+      stamp.textContent = 'עודכן ' + new Date(payload.generatedAt).toLocaleString('he-IL');
+      render();
+    } catch (err) {
+      app.innerHTML = `<div class="card"><div class="state err">לא הצלחתי לטעון נתונים ממאנדיי.<br><br>${esc(err.message)}</div></div>`;
+    }
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
