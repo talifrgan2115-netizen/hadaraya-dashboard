@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>הדריה — רווח</title>
+<title>HADARYA DESIGN — דשבורד פיננסי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&family=Frank+Ruhl+Libre:wght@400;500&display=swap">
@@ -59,28 +59,17 @@
   /* מספרים תמיד LTR: בדף RTL טווח כמו 13.9–19.9 מתהפך והמינוס נודד לסוף */
   .num-ltr, .tick, .peak-label, .kpi-value, .kpi-sub b, td.num, .tip .t-row b, .delta { direction: ltr; unicode-bidi: isolate; }
 
-  header { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
-  .brand { font-size: 11px; letter-spacing: .26em; color: var(--text-muted); font-weight: 500; margin-bottom: 7px; }
-  h1 { font-family: "Frank Ruhl Libre", Georgia, serif; font-size: 30px; font-weight: 500; margin: 0; line-height: 1.2; }
-  .sub { color: var(--text-secondary); font-size: 13px; margin-top: 6px; }
-  .stamp { color: var(--text-muted); font-size: 12px; }
+  header { text-align: center; margin-bottom: 30px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
+  h1 { font-family: "Frank Ruhl Libre", Georgia, serif; font-size: clamp(28px, 6vw, 44px); font-weight: 500;
+       margin: 0; letter-spacing: .06em; line-height: 1.12; direction: ltr; }
+  .tagline { color: var(--text-secondary); font-size: 12.5px; letter-spacing: .22em; margin-top: 11px; }
+  .stamp { color: var(--text-muted); font-size: 11.5px; margin-top: 14px; }
 
   .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
 
   .section-title { font-family: "Frank Ruhl Libre", Georgia, serif; font-size: 19px; font-weight: 500; margin: 34px 0 13px; }
 
   /* ---- סרגל כיסוי נתונים ---- */
-  .coverage { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 11px;
-              border: 1px solid var(--border); border-inline-start: 3px solid var(--warning);
-              background: var(--surface-1); margin-bottom: 14px; }
-  .coverage.crit { border-inline-start-color: var(--critical); }
-  .coverage .ico { flex: none; font-size: 15px; }
-  .coverage b { font-weight: 600; }
-  .coverage p { margin: 4px 0 0; color: var(--text-secondary); font-size: 13px; }
-  .months { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
-  .chip { font-size: 11.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-secondary); }
-  .chip.has { background: var(--surface-2); color: var(--text-primary); font-weight: 500; }
-  .chip.none { opacity: .72; text-decoration: line-through; text-decoration-thickness: 1px; }
 
   /* ---- כרטיסי תקופה ---- */
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 13px; }
@@ -98,7 +87,6 @@
   .kpi-sub { margin-top: 13px; padding-top: 11px; border-top: 1px solid var(--grid); display: flex; flex-direction: column; gap: 5px; }
   .kpi-sub div { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); }
   .kpi-sub b { font-weight: 500; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-  .kpi-flag { margin-top: 11px; font-size: 11.5px; color: var(--text-muted); display: flex; gap: 6px; align-items: flex-start; }
 
   /* ---- שורת סינון ---- */
   .filters { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; margin-bottom: 16px; }
@@ -109,8 +97,6 @@
                 color: var(--text-secondary); min-height: 32px; transition: background .12s, color .12s; }
   .seg button:hover { background: var(--grid); }
   .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-  .chk { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
-  .chk input { accent-color: var(--accent); width: 15px; height: 15px; }
 
   /* ---- תרשימים ---- */
   .chart-card { margin-bottom: 16px; position: relative; }
@@ -154,11 +140,8 @@
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <div class="brand">HADARYA</div>
-      <h1>רווח</h1>
-      <div class="sub">נתונים חיים מלוחות המאנדיי «הכנסות והזמנות» ו«הוצאות»</div>
-    </div>
+    <h1>HADARYA DESIGN</h1>
+    <div class="tagline">דשבורד פיננסי</div>
     <div class="stamp" id="stamp"></div>
   </header>
   <div id="app"><div class="state">טוען נתונים ממאנדיי…</div></div>
@@ -170,7 +153,7 @@
   const app = document.getElementById('app');
   const stamp = document.getElementById('stamp');
 
-  const state = { data: null, grain: 'month', includeReceipts: false, includeReview: true, view: 'chart' };
+  const state = { data: null, grain: 'month', view: 'chart' };
 
   // ---------- תאריכים ומספרים ----------
   const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
@@ -190,13 +173,11 @@
   const weekStart = (d) => addDays(d, -d.getDay());
 
   // ---------- סינון ----------
+  /** כל רשומה שיש לה תאריך וסכום נספרת — כולל המסומנות לבדיקה */
   function activeRows() {
     const d = state.data;
     const ok = (r) => r.date && r.amount !== null;
-    return {
-      income: d.income.filter(ok),
-      expenses: d.expenses.filter(r => ok(r) && (state.includeReceipts || !r.isReceipt) && (state.includeReview || !r.needsReview)),
-    };
+    return { income: d.income.filter(ok), expenses: d.expenses.filter(ok) };
   }
 
   /** סכום בטווח תאריכים כולל. מחזיר גם ספירות — אפס רשומות אינו אפס שקלים. */
@@ -266,10 +247,6 @@
       ? `<div class="kpi-value quiet">אין תנועה</div>`
       : `<div class="kpi-value ${c.profit >= 0 ? 'pos' : 'neg'}">${esc(shekel(c.profit))}</div>`;
 
-    // רווח בלי ולו הוצאה אחת רשומה אינו רווח — הוא הכנסה
-    const flag = (c.incomeCount > 0 && c.expenseCount === 0)
-      ? `<div class="kpi-flag"><span>⚑</span><span>אין הוצאות רשומות בתקופה — הסכום הזה הוא הכנסה, לא רווח</span></div>` : '';
-
     return `<div class="card kpi">
       <div class="kpi-label">${esc(p.label)}</div>
       <div class="kpi-span num-ltr">${esc(p.span)}</div>
@@ -279,7 +256,6 @@
         <div><span>הכנסות</span><b>${esc(shekel(c.income))}</b></div>
         <div><span>הוצאות</span><b>${esc(shekel(c.expenses))}</b></div>
       </div>
-      ${flag}
       <div class="kpi-flag"><span style="opacity:.6">↺</span><span class="num-ltr">${esc(p.prevLabel)}</span></div>
     </div>`;
   }
@@ -445,51 +421,6 @@
       <td class="num ${t.profit>=0?'pos':'neg'}">${esc(shekel(t.profit))}</td><td></td></tr></tfoot></table></div>`;
   }
 
-  // ---------- כיסוי נתונים ----------
-  function coverage(rows) {
-    const byMonth = new Map();
-    const touch = (k) => { if (!byMonth.has(k)) byMonth.set(k, { inc:0, exp:0 }); return byMonth.get(k); };
-    for (const r of rows.income) touch(bucketKey(parseDate(r.date), 'month')).inc++;
-    for (const r of rows.expenses) touch(bucketKey(parseDate(r.date), 'month')).exp++;
-    const keys = fillRange([...byMonth.keys()], 'month');
-    const missing = keys.filter(k => (byMonth.get(k)?.exp || 0) === 0 && (byMonth.get(k)?.inc || 0) > 0);
-
-    const chips = keys.map(k => {
-      const v = byMonth.get(k) || { inc:0, exp:0 };
-      const name = bucketLabel(k, 'month').replace(/ \d{4}$/, '');
-      return `<span class="chip ${v.exp > 0 ? 'has' : 'none'}">${esc(name)}</span>`;
-    }).join('');
-
-    if (!missing.length) return '';
-    return `<div class="coverage crit">
-      <span class="ico">⚠</span>
-      <div>
-        <b>נתוני הוצאה קיימים רק לחלק מהחודשים</b>
-        <p>ב-${missing.length} חודשים יש הכנסות רשומות בלי אף הוצאה. הרווח שלהם אינו מחושב ואינו מוצג בתרשימים —
-           עמודה מוצללת מסמנת אותם. אלה כנראה הוצאות שטרם הוזנו למאנדיי, ולא חודשים ללא עלויות.</p>
-        <div class="months">${chips}</div>
-      </div></div>`;
-  }
-
-  function receiptsNotice(all) {
-    const rec = all.filter(r => r.isReceipt), rev = all.filter(r => r.needsReview);
-    let out = '';
-    if (rec.length) {
-      const s = rec.reduce((t,r) => t + (r.amount||0), 0);
-      out += `<div class="coverage"><span class="ico">⧉</span><div>
-        <b>${rec.length} רשומות מזוהות כקבלות (${esc(shekel(s))})</b>
-        <p>${state.includeReceipts ? 'נספרות כרגע יחד עם החשבוניות שהן מתעדות, כך שההוצאות מנופחות.'
-                                   : 'קבלה מתעדת חשבונית שכבר רשומה, ולכן היא מנוטרלת כברירת מחדל.'}</p></div></div>`;
-    }
-    if (rev.length) {
-      const s = rev.reduce((t,r) => t + (r.amount||0), 0);
-      out += `<div class="coverage"><span class="ico">⚑</span><div>
-        <b>${rev.length} רשומות מסומנות «לבדיקה» (${esc(shekel(s))})</b>
-        <p>${esc(rev.map(r => `${r.vendor || r.name} — ${shekel(r.amount||0)}`).join(' · '))}</p></div></div>`;
-    }
-    return out;
-  }
-
   // ---------- הרכבה ----------
   function render() {
     const rows = activeRows();
@@ -497,9 +428,6 @@
     const grainWord = state.grain === 'week' ? 'שבוע' : 'חודש';
 
     app.innerHTML = `
-      ${coverage(rows)}
-      ${receiptsNotice(state.data.expenses)}
-
       <div class="section-title">תקופות</div>
       <div class="kpis">${periods(rows).map(kpiCard).join('')}</div>
 
@@ -515,8 +443,6 @@
             <button data-v="chart" aria-pressed="${state.view==='chart'}">תרשים</button>
             <button data-v="table" aria-pressed="${state.view==='table'}">טבלה</button>
           </div></div>
-        <label class="chk"><input type="checkbox" id="rec" ${state.includeReceipts?'checked':''}> כלול קבלות</label>
-        <label class="chk"><input type="checkbox" id="rev" ${state.includeReview?'checked':''}> כלול רשומות לבדיקה</label>
       </div>
 
       ${state.view === 'table' ? `<div class="card">${table(buckets)}</div>` : `
@@ -552,8 +478,6 @@
       const b = e.target.closest('button'); if (!b) return; state[key] = b.dataset.v; render();
     });
     seg('grain','grain'); seg('view','view');
-    document.getElementById('rec')?.addEventListener('change', e => { state.includeReceipts = e.target.checked; render(); });
-    document.getElementById('rev')?.addEventListener('change', e => { state.includeReview = e.target.checked; render(); });
 
     hover('card-trend','tip-trend', buckets, b => `
       <div class="t-row"><span>הכנסות</span><b>${esc(shekel(b.income))}</b></div>
