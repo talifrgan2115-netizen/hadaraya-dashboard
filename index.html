@@ -106,13 +106,11 @@
   .legend { display: flex; gap: 15px; flex-wrap: wrap; }
   .legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
   .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
-  .swatch.hatch { background: repeating-linear-gradient(45deg, var(--baseline) 0 2px, transparent 2px 5px); border: 1px solid var(--baseline); }
   .plot { width: 100%; height: auto; display: block; margin-top: 10px; overflow: visible; }
   .plot text { font-family: "Heebo", system-ui, sans-serif; }
   .tick { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
   .band-label { fill: var(--text-secondary); font-size: 11.5px; }
   .peak-label { fill: var(--text-primary); font-size: 11.5px; font-weight: 600; }
-  .nodata-mark { fill: var(--text-muted); font-size: 10.5px; }
 
   .tip { position: absolute; pointer-events: none; z-index: 5; opacity: 0; transition: opacity .09s;
          background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
@@ -121,14 +119,12 @@
   .tip .t-title { font-weight: 600; margin-bottom: 6px; }
   .tip .t-row { display: flex; justify-content: space-between; gap: 15px; color: var(--text-secondary); }
   .tip .t-row b { color: var(--text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .tip .t-note { margin-top: 6px; color: var(--text-muted); font-size: 11.5px; }
 
   .tablewrap { overflow-x: auto; margin-top: 8px; }
   table { border-collapse: collapse; width: 100%; font-size: 13px; }
   th, td { text-align: right; padding: 9px 11px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
   th { color: var(--text-muted); font-weight: 500; font-size: 11px; letter-spacing: .1em; }
   td.num { font-variant-numeric: tabular-nums; }
-  td.muted { color: var(--text-muted); }
   tfoot td { font-weight: 600; border-top: 2px solid var(--baseline); border-bottom: 0; }
 
   .state { padding: 46px 20px; text-align: center; color: var(--text-secondary); }
@@ -292,7 +288,7 @@
 
     return fillRange([...map.keys()], state.grain).map(key => {
       const b = map.get(key) || { income:0, expenses:0, incomeCount:0, expenseCount:0 };
-      return { ...b, key, label: bucketLabel(key, state.grain), profit: b.income - b.expenses, noExpenseData: b.expenseCount === 0 };
+      return { ...b, key, label: bucketLabel(key, state.grain), profit: b.income - b.expenses };
     });
   }
 
@@ -315,10 +311,6 @@
     return `M${x},${y+h} L${x},${y+rr} Q${x},${y} ${x+rr},${y} L${x+w-rr},${y} Q${x+w},${y} ${x+w},${y+rr} L${x+w},${y+h} Z`;
   }
 
-  const HATCH = `<defs><pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-      <rect width="6" height="6" fill="var(--surface-1)"/>
-      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--baseline)" stroke-width="2"/></pattern></defs>`;
-
   function yAxis(sc) {
     let out = '';
     for (let v = sc.lo; v <= sc.hi + sc.step/2; v += sc.step) {
@@ -329,7 +321,7 @@
     return out;
   }
 
-  /** תרשים הכנסות מול הוצאות. תקופה בלי ולו הוצאה אחת מסומנת בהצללה ובתווית. */
+  /** תרשים הכנסות מול הוצאות */
   function renderTrend(buckets) {
     if (!buckets.length) return '<div class="state">אין נתונים.</div>';
     const sc = niceScale(0, Math.max(1, ...buckets.map(b => Math.max(b.income, b.expenses))));
@@ -345,12 +337,7 @@
       const cx = M.left + band * (i + 0.5);
       const xi = cx - barW - 1, xe = cx + 1;   // 2px רווח משטח בין העמודים
       marks += `<path d="${barPath(xi, y(b.income), barW, M.top + plotH - y(b.income))}" fill="var(--series-income)"/>`;
-      if (b.noExpenseData) {
-        marks += `<rect x="${xe}" y="${M.top + plotH - 16}" width="${barW}" height="16" fill="url(#hatch)" stroke="var(--baseline)" stroke-width="1"/>`;
-        labels += `<text class="nodata-mark" x="${xe + barW/2}" y="${M.top + plotH - 21}" text-anchor="middle">אין נתון</text>`;
-      } else {
-        marks += `<path d="${barPath(xe, y(b.expenses), barW, M.top + plotH - y(b.expenses))}" fill="var(--series-expense)"/>`;
-      }
+      marks += `<path d="${barPath(xe, y(b.expenses), barW, M.top + plotH - y(b.expenses))}" fill="var(--series-expense)"/>`;
       if ((buckets.length - 1 - i) % nth === 0)
         labels += `<text class="band-label${ltr}" x="${cx}" y="${M.top+plotH+18}" text-anchor="middle">${esc(b.label)}</text>`;
       if (i === peak && b.income > 0)
@@ -359,19 +346,16 @@
     });
 
     return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="הכנסות מול הוצאות">
-      ${HATCH}${yAxis(sc)}${marks}
+      ${yAxis(sc)}${marks}
       <line x1="${M.left}" y1="${M.top+plotH}" x2="${M.left+plotW}" y2="${M.top+plotH}" stroke="var(--baseline)" stroke-width="1"/>
       ${labels}<g class="hits">${hits}</g></svg>`;
   }
 
-  /** תרשים רווח. תקופה בלי נתוני הוצאה אינה מצוירת כרווח — היא מוצללת. */
+  /** תרשים רווח */
   function renderProfit(buckets) {
     if (!buckets.length) return '<div class="state">אין נתונים.</div>';
-    const real = buckets.filter(b => !b.noExpenseData);
-    if (!real.length) return '<div class="state">אין אף תקופה שיש בה גם הכנסות וגם הוצאות רשומות.</div>';
-
     // אפס תמיד בסקאלה: גרף רווח בלי קו האפס מאבד את ההבחנה בין רווח להפסד
-    const sc = niceScale(Math.min(0, ...real.map(b => b.profit)), Math.max(0, ...real.map(b => b.profit)));
+    const sc = niceScale(Math.min(0, ...buckets.map(b => b.profit)), Math.max(0, ...buckets.map(b => b.profit)));
     const y = (v) => M.top + plotH - ((v - sc.lo)/(sc.hi - sc.lo)) * plotH;
     const zero = y(0);
     const band = plotW / buckets.length;
@@ -382,22 +366,17 @@
     let marks = '', labels = '', hits = '';
     buckets.forEach((b, i) => {
       const cx = M.left + band*(i+0.5), x = cx - barW/2;
-      if (b.noExpenseData) {
-        marks += `<rect x="${x}" y="${zero-14}" width="${barW}" height="14" fill="url(#hatch)" stroke="var(--baseline)" stroke-width="1"/>`;
-        labels += `<text class="nodata-mark" x="${cx}" y="${zero-19}" text-anchor="middle">אין נתון</text>`;
-      } else {
-        const up = b.profit >= 0, h = Math.abs(zero - y(b.profit));
-        marks += up
-          ? `<path d="${barPath(x, y(b.profit), barW, h)}" fill="var(--profit-pos)"/>`
-          : `<path d="${barPath(x, zero, barW, h)}" fill="var(--profit-neg)" transform="rotate(180 ${x+barW/2} ${zero+h/2})"/>`;
-      }
+      const up = b.profit >= 0, h = Math.abs(zero - y(b.profit));
+      marks += up
+        ? `<path d="${barPath(x, y(b.profit), barW, h)}" fill="var(--profit-pos)"/>`
+        : `<path d="${barPath(x, zero, barW, h)}" fill="var(--profit-neg)" transform="rotate(180 ${x+barW/2} ${zero+h/2})"/>`;
       if ((buckets.length - 1 - i) % nth === 0)
         labels += `<text class="band-label${ltr}" x="${cx}" y="${M.top+plotH+18}" text-anchor="middle">${esc(b.label)}</text>`;
       hits += `<rect x="${M.left+band*i}" y="${M.top}" width="${band}" height="${plotH}" fill="transparent" data-i="${i}"/>`;
     });
 
     return `<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="רווח לפי תקופה">
-      ${HATCH}${yAxis(sc)}${marks}
+      ${yAxis(sc)}${marks}
       <line x1="${M.left}" y1="${zero}" x2="${M.left+plotW}" y2="${zero}" stroke="var(--baseline)" stroke-width="1"/>
       ${labels}<g class="hits">${hits}</g></svg>`;
   }
@@ -409,8 +388,8 @@
     const rows = buckets.map(b => `<tr>
       <td>${esc(b.label)}</td>
       <td class="num">${esc(shekel(b.income))}</td>
-      <td class="num ${b.noExpenseData ? 'muted' : ''}">${b.noExpenseData ? 'אין נתון' : esc(shekel(b.expenses))}</td>
-      <td class="num ${b.noExpenseData ? 'muted' : (b.profit >= 0 ? 'pos' : 'neg')}">${b.noExpenseData ? '—' : esc(shekel(b.profit))}</td>
+      <td class="num">${esc(shekel(b.expenses))}</td>
+      <td class="num ${b.profit >= 0 ? 'pos' : 'neg'}">${esc(shekel(b.profit))}</td>
       <td class="num muted">${b.incomeCount} / ${b.expenseCount}</td>
     </tr>`).join('');
 
@@ -453,18 +432,16 @@
             <div class="legend">
               <span><i class="swatch" style="background:var(--series-income)"></i>הכנסות</span>
               <span><i class="swatch" style="background:var(--series-expense)"></i>הוצאות</span>
-              <span><i class="swatch hatch"></i>אין נתוני הוצאה</span>
             </div></div>
           ${renderTrend(buckets)}<div class="tip" id="tip-trend"></div>
         </div>
         <div class="card chart-card" id="card-profit">
           <div class="chart-head">
             <div><h2>רווח לפי ${esc(grainWord)}</h2>
-              <div class="chart-sub">מחושב רק לתקופות שיש בהן גם הכנסות וגם הוצאות רשומות</div></div>
+              <div class="chart-sub">הכנסות פחות הוצאות, בשקלים</div></div>
             <div class="legend">
               <span><i class="swatch" style="background:var(--profit-pos)"></i>רווח</span>
               <span><i class="swatch" style="background:var(--profit-neg)"></i>הפסד</span>
-              <span><i class="swatch hatch"></i>לא ניתן לחשב</span>
             </div></div>
           ${renderProfit(buckets)}<div class="tip" id="tip-profit"></div>
         </div>
@@ -481,14 +458,12 @@
 
     hover('card-trend','tip-trend', buckets, b => `
       <div class="t-row"><span>הכנסות</span><b>${esc(shekel(b.income))}</b></div>
-      <div class="t-row"><span>הוצאות</span><b>${b.noExpenseData ? 'אין נתון' : esc(shekel(b.expenses))}</b></div>
-      ${b.noExpenseData ? '<div class="t-note">אין אף הוצאה רשומה בתקופה זו</div>'
-        : `<div class="t-row"><span>רווח</span><b>${esc(shekel(b.profit))}</b></div>`}`);
+      <div class="t-row"><span>הוצאות</span><b>${esc(shekel(b.expenses))}</b></div>
+      <div class="t-row"><span>רווח</span><b>${esc(shekel(b.profit))}</b></div>`);
 
-    hover('card-profit','tip-profit', buckets, b => b.noExpenseData
-      ? `<div class="t-note">אין נתוני הוצאה — הרווח אינו ניתן לחישוב</div>`
-      : `<div class="t-row"><span>רווח</span><b>${esc(shekel(b.profit))}</b></div>
-         <div class="t-row"><span>שיעור</span><b>${b.income ? Math.round((b.profit/b.income)*100)+'%' : '—'}</b></div>`);
+    hover('card-profit','tip-profit', buckets, b =>
+      `<div class="t-row"><span>רווח</span><b>${esc(shekel(b.profit))}</b></div>
+       <div class="t-row"><span>שיעור</span><b>${b.income ? Math.round((b.profit/b.income)*100)+'%' : '—'}</b></div>`);
   }
 
   function hover(cardId, tipId, buckets, body) {
