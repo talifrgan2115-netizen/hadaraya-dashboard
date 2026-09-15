@@ -6,14 +6,23 @@
  * ובהיקף הזה (כ-120 רשומות) זה זול מכל חלופה.
  */
 
-const BOARD_INCOME = 5028517924;
+/**
+ * ההכנסה נמדדת בלוח הלידים ולא בלוח ההכנסות: העסקה נספרת ביום
+ * שנסגרה ובמחיר שסוכם בפועל אחרי ההנחה, ולא ביום שהכסף נרשם.
+ * רק לידים בסטטוס «נסגר בהצלחה» נספרים.
+ */
+const BOARD_INCOME = 5026766166;
 const BOARD_EXPENSES = 5031295733;
 
-/** שתי העמודות חולקות מזהים זהים בשני הבורדים — לא צירוף מקרים, הבורדים שוכפלו */
-const COL_DATE = 'date_mm3b5ymm';
-const COL_AMOUNT = 'numeric_mm3b6268';
-const COL_STATUS = 'color_mm3bwqs2';
-const COL_VENDOR = 'text_mm76b0zx';
+const INCOME_STATUS = 'נסגר בהצלחה';
+
+const COL_INCOME_STATUS = 'color_mm0ts2n0';   // סטטוס מכירה
+const COL_INCOME_DATE   = 'date_mm2ses3r';    // תאריך סגירה
+const COL_INCOME_AMOUNT = 'numeric_mm25qqb5'; // מחיר לאחר הנחה
+
+const COL_EXPENSE_DATE   = 'date_mm3b5ymm';
+const COL_EXPENSE_AMOUNT = 'numeric_mm3b6268';
+const COL_VENDOR         = 'text_mm76b0zx';
 
 const MONDAY_URL = 'https://api.monday.com/v2';
 
@@ -25,7 +34,7 @@ const QUERY = `
         items {
           id
           name
-          column_values(ids: ["${COL_DATE}", "${COL_AMOUNT}", "${COL_STATUS}"]) { id text }
+          column_values(ids: ["${COL_INCOME_DATE}", "${COL_INCOME_AMOUNT}", "${COL_INCOME_STATUS}"]) { id text }
         }
       }
     }
@@ -35,7 +44,7 @@ const QUERY = `
         items {
           id
           name
-          column_values(ids: ["${COL_DATE}", "${COL_AMOUNT}", "${COL_VENDOR}"]) { id text }
+          column_values(ids: ["${COL_EXPENSE_DATE}", "${COL_EXPENSE_AMOUNT}", "${COL_VENDOR}"]) { id text }
         }
       }
     }
@@ -132,19 +141,22 @@ module.exports = async (req, res) => {
     const incomeItems = await drainPages(token, data.income?.[0]?.items_page, limit);
     const expenseItems = await drainPages(token, data.expenses?.[0]?.items_page, limit);
 
-    const income = incomeItems.map(item => ({
-      id: item.id,
-      name: item.name,
-      date: cellText(item, COL_DATE),
-      amount: parseAmount(cellText(item, COL_AMOUNT)),
-      status: cellText(item, COL_STATUS),
-    }));
+    // ליד שלא נסגר אינו הכנסה — הוא מסונן כאן ולא מגיע לדשבורד כלל
+    const income = incomeItems
+      .filter(item => cellText(item, COL_INCOME_STATUS) === INCOME_STATUS)
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        date: cellText(item, COL_INCOME_DATE),
+        amount: parseAmount(cellText(item, COL_INCOME_AMOUNT)),
+        status: cellText(item, COL_INCOME_STATUS),
+      }));
 
     const expenses = expenseItems.map(item => ({
       id: item.id,
       name: item.name,
-      date: cellText(item, COL_DATE),
-      amount: parseAmount(cellText(item, COL_AMOUNT)),
+      date: cellText(item, COL_EXPENSE_DATE),
+      amount: parseAmount(cellText(item, COL_EXPENSE_AMOUNT)),
       vendor: cellText(item, COL_VENDOR),
       isReceipt: isReceipt(item.name),
       needsReview: needsReview(item.name),
@@ -154,7 +166,7 @@ module.exports = async (req, res) => {
     res.status(200).json({
       generatedAt: new Date().toISOString(),
       boards: {
-        income: { id: String(BOARD_INCOME), name: 'הכנסות והזמנות' },
+        income: { id: String(BOARD_INCOME), name: 'לידים', filter: INCOME_STATUS },
         expenses: { id: String(BOARD_EXPENSES), name: 'הוצאות' },
       },
       income,
