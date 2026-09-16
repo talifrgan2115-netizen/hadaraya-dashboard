@@ -21,7 +21,8 @@ const COL_INCOME_DATE   = 'date_mm2ses3r';    // תאריך סגירה
 const COL_INCOME_AMOUNT = 'numeric_mm25qqb5'; // מחיר לאחר הנחה
 
 const COL_EXPENSE_DATE   = 'date_mm3b5ymm';
-const COL_EXPENSE_AMOUNT = 'numeric_mm3b6268';
+// «סכום בש״ח» — פורמולה שממירה חשבוניות דולר לשקלים. «סכום» הגולמי מערבב מטבעות.
+const COL_EXPENSE_AMOUNT = 'formula_mm78a79q';
 const COL_VENDOR         = 'text_mm76b0zx';
 
 const MONDAY_URL = 'https://api.monday.com/v2';
@@ -44,7 +45,7 @@ const QUERY = `
         items {
           id
           name
-          column_values(ids: ["${COL_EXPENSE_DATE}", "${COL_EXPENSE_AMOUNT}", "${COL_VENDOR}"]) { id text }
+          column_values(ids: ["${COL_EXPENSE_DATE}", "${COL_EXPENSE_AMOUNT}", "${COL_VENDOR}"]) { id text ... on FormulaValue { display_value } }
         }
       }
     }
@@ -58,7 +59,7 @@ const NEXT_PAGE = `
       items {
         id
         name
-        column_values { id text }
+        column_values { id text ... on FormulaValue { display_value } }
       }
     }
   }
@@ -70,7 +71,7 @@ async function callMonday(token, query, variables) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': token,
-      'API-Version': '2024-10',
+      'API-Version': '2025-04',
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -87,8 +88,12 @@ async function callMonday(token, query, variables) {
   return payload.data;
 }
 
-const cellText = (item, columnId) =>
-  item.column_values?.find(c => c.id === columnId)?.text ?? null;
+/** בעמודת פורמולה השדה text ריק תמיד — הערך המחושב נמצא ב-display_value */
+const cellText = (item, columnId) => {
+  const cell = item.column_values?.find(c => c.id === columnId);
+  if (!cell) return null;
+  return cell.display_value ?? cell.text ?? null;
+};
 
 /** סכום ריק אינו אפס — רשומה בלי סכום נספרת כחסרה ולא כ-0 */
 function parseAmount(raw) {
